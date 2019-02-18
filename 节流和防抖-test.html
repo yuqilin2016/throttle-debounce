@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>节流和防抖</title>
+	<style>
+	body {
+		display: flex;
+		flex-flow: column;
+		align-items: center;
+	}
+	.originalFirst, #demo1 {
+		width: 200px;
+		height: 200px;
+		border: 1px solid tomato;
+		margin-bottom: 10px;
+	}
+	.originalFirst:hover, #demo1:hover {
+		border: 2px solid red;
+	}
+	</style>
+</head>
+<body>
+<h3>节流与防抖</h3>
+<div class="originalFirst">未使用函数节流(移动鼠标): <span></span></div>
+<div id="demo1">函数节流：<span></span></div>
+
+<div id="demo2">函数防抖：
+	<div>
+		<label for="search">请输入搜索词：</label>
+		<input type="text" id="search" list="suggestion">
+		<datalist id="suggestion"></datalist>
+	</div>
+</div>
+
+<script>
+let originalFirst = document.querySelector('.originalFirst')
+let spanTest = originalFirst.querySelector('span')
+let demo1 = document.querySelector('#demo1')
+let span1 = demo1.querySelector('span')
+let num1 = 0, num2 = 0
+originalFirst.addEventListener('mousemove', addNum1)
+demo1.addEventListener('mousemove', throttle(addNum2, 300))
+
+function addNum1 () {
+	spanTest.innerText = ++num1
+}
+function addNum2 () {
+	span1.innerText = ++num2
+}
+function throttle (fn, delay=200) {
+	let time = Date.now()
+	return function () {
+		if (Date.now() - time > delay) {
+			fn()
+			time = Date.now()
+		}
+	}
+}
+
+let search = document.querySelector('#search')
+let suggestion = document.querySelector('#suggestion')
+let timer = null
+search.addEventListener('keyup', () => {
+	clearTimeout(timer)
+	timer = setTimeout(showSuggestion, 300)
+})
+
+function showSuggestion () {
+	let keyWord = search.value, num = 0
+	loadScript(`http://suggestion.baidu.com/su?wd=${keyWord}&cb=handle`)
+	let option = document.createElement('option')
+	// option.value = ++num
+	suggestion.appendChild(option)
+}
+
+function handle (res) {
+	suggestion.innerHTML = ''
+	res.s.forEach((item) => {
+		let option = document.createElement('option')
+		option.value = item
+		suggestion.appendChild(option)
+	})
+	document.body.removeChild(document.body.lastChild)
+}
+
+function loadScript (url) {
+	let script = document.createElement('script')
+	script.type = 'text/javascript'
+	script.src = url
+	document.body.appendChild(script)
+}
+</script>
+</body>
+</html>
